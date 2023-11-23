@@ -10,7 +10,7 @@ public class DangerController : MonoBehaviour
             PlayerController playerController = collision.gameObject.GetComponent<PlayerController>();
             GameController gameController = FindObjectOfType<GameController>();
 
-            if (playerController != null && !playerController.IsPaused())
+            if (playerController != null && !playerController.IsPaused() && playerController.IsActiveCollisions())
             {
                 gameController.EndGame();
             }

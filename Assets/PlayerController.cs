@@ -9,7 +9,9 @@ public class PlayerController : MonoBehaviour
     private bool paused = false; // Indicates if the game is paused
     public float rotateAmount = 1f;
 
+    private bool activeCollisions = true;
 
+    private float disableCollisionsTime = 1.5f;
     void Start()
     {
         // Get the reference to the Rigidbody2D
@@ -95,7 +97,10 @@ public class PlayerController : MonoBehaviour
     public void UnPauseGame()
     {
         paused = false;
-        // You can perform other actions here, such as showing a victory message or triggering transitions.
+
+        //disable collision for first X seconds
+        activeCollisions = false;
+        Invoke("SetActiveCollisions", disableCollisionsTime);
     }
     public bool IsPaused()
     {
@@ -109,11 +114,19 @@ public class PlayerController : MonoBehaviour
     }
     void IncreaseSpeed()
     {
-        movementSpeed += 0.15f;
+        movementSpeed += 0.10f;
 
     }
     void IncreaseRotation()
     {
-        rotationSpeed += 40f;
+        rotationSpeed += 30f;
+    }
+    void SetActiveCollisions()
+    {
+        activeCollisions = true;
+    }
+    public bool IsActiveCollisions()
+    {
+        return activeCollisions;
     }
 }
