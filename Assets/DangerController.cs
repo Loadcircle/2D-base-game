@@ -12,9 +12,7 @@ public class DangerController : MonoBehaviour
 
             if (playerController != null && !playerController.IsPaused())
             {
-                gameController.PlayDangerSound();
-                SceneManager.LoadScene("Game");
-                //TODO DISPLAY LOSE SCREEN
+                gameController.EndGame();
             }
         }
     }

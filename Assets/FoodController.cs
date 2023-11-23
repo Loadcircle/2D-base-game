@@ -13,7 +13,7 @@ public class FoodController : MonoBehaviour
             {
                 Destroy(gameObject);
                 gameController.PlayFoodSound();
-                gameController.scoreIncrease();
+                gameController.ScoreIncrease();
             }
         }
     }

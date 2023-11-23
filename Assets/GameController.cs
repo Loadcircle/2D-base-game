@@ -1,5 +1,6 @@
+using System.Linq;
 using TMPro;
-using Unity.VisualScripting;
+using UnityEngine.SceneManagement;
 using UnityEngine;
 
 public class GameController : MonoBehaviour
@@ -25,6 +26,11 @@ public class GameController : MonoBehaviour
     //level completed
     public GameObject levelCompletedCanvas;
     private int foodCount = 0;
+
+    //endgame
+    public GameObject endGameCanvas;
+    public TextMeshProUGUI newRecordText;
+    public TextMeshProUGUI endGameInfo;
     void Start()
     {
         currentFoodAmount = initialFoodAmount;
@@ -46,7 +52,29 @@ public class GameController : MonoBehaviour
         for (int i = 0; i < amount; i++)
         {
             Vector3 position = new Vector3(Random.Range(-maxX, maxX), Random.Range(-maxY, maxY), 0f);
-            Instantiate(ballPrefab, position, Quaternion.identity);
+
+            // Instantiate the ball and check for overlap
+            Collider2D[] colliders = Physics2D.OverlapCircleAll(position, 1.0f);
+            bool overlap = colliders.Any(c => c.gameObject.CompareTag(ballPrefab.tag));
+
+            if (!overlap)
+            {
+                Instantiate(ballPrefab, position, Quaternion.identity);
+            }
+            else
+            {
+                // If there is an overlap, decrement the loop counter to try again for this iteration
+                i--;
+            }
+        }
+    }
+
+    void DestroyBallsWithTag(string tag)
+    {
+        GameObject[] balls = GameObject.FindGameObjectsWithTag(tag);
+        foreach (GameObject ball in balls)
+        {
+            Destroy(ball);
         }
     }
 
@@ -69,22 +97,13 @@ public class GameController : MonoBehaviour
 
 
         // Increment the level
-        levelIncrease();
+        LevelIncrease();
 
         levelCompletedCanvas.SetActive(false);
     }
 
-    void DestroyBallsWithTag(string tag)
-    {
-        GameObject[] balls = GameObject.FindGameObjectsWithTag(tag);
-        foreach (GameObject ball in balls)
-        {
-            Destroy(ball);
-        }
-    }
 
-
-    public void scoreIncrease(int ammount = 1)
+    public void ScoreIncrease(int ammount = 1)
     {
         score += ammount;
         foodCount--;
@@ -96,7 +115,7 @@ public class GameController : MonoBehaviour
             LevelCompleted();
         }
     }
-    public void levelIncrease()
+    public void LevelIncrease()
     {
         level++;
         UpdateUI();
@@ -111,6 +130,10 @@ public class GameController : MonoBehaviour
     {
         // Mostrar el canvas de victoria
         levelCompletedCanvas.SetActive(true);
+        SetPuasedGame();
+    }
+    public void SetPuasedGame()
+    {
         PlayerController playerController = FindObjectOfType<PlayerController>();
         playerController.PauseGame();
     }
@@ -130,5 +153,43 @@ public class GameController : MonoBehaviour
         {
             AudioSource.PlayClipAtPoint(dangerSoundClip, Camera.main.transform.position);
         }
+    }
+
+
+
+    //End game methods
+    public void EndGame()
+    {
+        PlayDangerSound();
+        SetPuasedGame();
+        endGameCanvas.SetActive(true);
+
+        endGameInfo.text = "Total Score: " + score.ToString() + "\nLevel: " + level.ToString();
+
+        //if new record
+
+        // Recuperar el récord actual
+        int currentRecord = PlayerPrefs.GetInt("HighScore", 0);
+        Debug.Log(currentRecord);
+        if (score > currentRecord)
+        {
+            UpdateRecord();
+        }
+        else
+        {
+            newRecordText.enabled = false;
+        }
+    }
+    public void PlayAgain()
+    {
+        SceneManager.LoadScene("Game");
+    }
+    public void UpdateRecord()
+    {
+        // Update record
+        PlayerPrefs.SetInt("HighScore", score);
+        PlayerPrefs.SetInt("HighLevel", level);
+        PlayerPrefs.Save(); // Guardar los cambios
+
     }
 }
